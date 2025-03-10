@@ -114,16 +114,16 @@ const drawScale = (padding, chartHeight, maxValue) => {
 };
 
 const drawBars = (padding, chartWidth, chartHeight, maxValue) => {
-  const dataLength = props.data.length;
+  const dataLength = props.data.length; //  데이터 갯수
   const legendKeys = Object.keys(props.data[0]).filter((key) =>
     key.startsWith("legend_")
   );
-  const numLegends = legendKeys.length;
+  const numLegends = legendKeys.length; // 1개 당 bar 갯수
 
-  // Calculate the width for each data group
-  const groupWidth = (chartWidth - padding - 20) / dataLength;
-  const barWidth = (groupWidth * 0.8) / numLegends;
-  const barSpacing = (groupWidth * 0.2) / (numLegends + 1);
+  // 막대 너비 및 간격 계산
+  const groupWidth = (chartWidth - padding - 20) / dataLength; // 전체 너비에서 여백 padding+20 제외, 한 그룹이 차지하는 너비
+  const barWidth = (groupWidth * 0.8) / numLegends; // 각 막대의 너비 (그룹 내 막대 너비 80%)
+  const barSpacing = (groupWidth * 0.2) / (numLegends + 1); // 막대 간의 간격 (전체 너비의 20%를 막대 간 간격), 막대 1개만큼 양쪽 여백 추가
 
   // Draw each data group
   props.data.forEach((item, dataIndex) => {
