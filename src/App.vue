@@ -1,18 +1,10 @@
 <template>
   <div class="app">
-    <BarChartTest
-      :data="chartData"
-      :width="800"
-      :height="500"
-      chartTitle="바 테스트 차트"
-      :legendLabels="['범례 1', '범례 2']"
-      :colors="['#FF6384', '#36A2EB']"
-    />
     <BarChart
       :data="chartData"
       :width="800"
       :height="500"
-      chartTitle="바 더미 차트"
+      chartTitle="바 테스트 차트"
       :legendLabels="['범례 1', '범례 2']"
       :colors="['#FF6384', '#36A2EB']"
     />
@@ -29,14 +21,12 @@
 
 <script>
 import { ref } from "vue";
-import BarChartTest from "./components/BarChartTest.vue";
-import BarChart from "./components/BarChart.vue";
+import BarChart from "./components/BarChartTest.vue";
 import RadarChart from "./components/RadarChart.vue";
 
 export default {
   name: "App",
   components: {
-    BarChartTest,
     BarChart,
     RadarChart,
   },
