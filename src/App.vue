@@ -1,19 +1,45 @@
 <template>
   <div class="app">
-    <BarChart
+    <CanvasBarChart
       :data="chartData"
       :width="800"
       :height="500"
-      chartTitle="바 테스트 차트"
+      chartTitle="Canvas 막대 차트"
       :legendLabels="['범례 1', '범례 2']"
       :colors="['#FF6384', '#36A2EB']"
     />
+    <WebGLBarChart
+      :data="chartData"
+      :width="800"
+      :height="500"
+      chartTitle="WebGL 2D 막대 차트"
+      :legendLabels="['범례 1', '범례 2']"
+      :colors="['#FF6384', '#36A2EB']"
+    />
+    <Bar3DChart
+      :data="chartData"
+      :width="800"
+      :height="500"
+      chartTitle="WebGL 3D 막대 차트"
+      :legendLabels="['범례 1', '범례 2']"
+      :colors="['#FF6384', '#36A2EB']"
+    />
+
+    <!-- <PixiBarChart
+      :data="chartData"
+      :width="800"
+      :height="500"
+      chartTitle="PixiJS 막대 차트"
+      :legendLabels="['범례 1', '범례 2']"
+      :colors="['#FF6384', '#36A2EB']"
+    /> -->
+
     <RadarChart
       :data="radarData"
       :categories="categories"
       :width="800"
-      :height="800"
-      chartTitle="레이더 더미 차트"
+      :height="500"
+      chartTitle="Canvas 레이더 차트"
       :colors="['#FF6384', '#36A2EB']"
     />
   </div>
@@ -21,13 +47,19 @@
 
 <script>
 import { ref } from "vue";
-import BarChart from "./components/BarChartTest.vue";
+import CanvasBarChart from "./components/CanvasBarChart.vue";
+import WebGLBarChart from "./components/WebGLBarChart.vue";
+import Bar3DChart from "./components/Bar3DChart.vue";
+// import PixiBarChart from "./components/PixiBarChart.vue";
 import RadarChart from "./components/RadarChart.vue";
 
 export default {
   name: "App",
   components: {
-    BarChart,
+    // PixiBarChart,
+    Bar3DChart,
+    CanvasBarChart,
+    WebGLBarChart,
     RadarChart,
   },
   setup() {
