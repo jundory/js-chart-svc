@@ -185,16 +185,17 @@ const handleMouseMove = (event) => {
 
   chartDataWithRects.value.forEach((group) => {
     Object.keys(group).forEach((data) => {
-      const { x, y, width, height } = group[data];
+      const { value, x, y, width, height } = group[data];
       if (
         mouseX >= x &&
         mouseX <= x + width &&
         mouseY >= y &&
         mouseY <= y + height
       ) {
+        console.log(value);
         tooltip.value = {
           visible: true,
-          text: `${data.label}: ${data.value}`,
+          text: `${data.label}: ${value}`,
           x: event.clientX,
           y: event.clientY - 20,
         };
