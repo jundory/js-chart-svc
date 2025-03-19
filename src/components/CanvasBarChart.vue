@@ -19,8 +19,11 @@
     <div
       v-if="tooltip.visible"
       class="tooltip"
-      :style="{ top: tooltip.y + 'px', left: tooltip.x + 'px' }"
+      :style="{ top: tooltip.y + 110 + 'px', left: tooltip.x + 'px' }"
     >
+      <div>{{ tooltip.label }}</div>
+      <br />
+      {{ tooltip.labelInfo }}:
       {{ tooltip.text }}
     </div>
   </div>
@@ -140,15 +143,16 @@ const drawBars = (chartPadding, chartWidth, chartHeight, maxValue) => {
       ctx.value.fillText(value.toString(), x + barWidth / 2, y - 5);
 
       // 직접 추가해본 테두리
-      ctx.value.fillStyle = "#000";
-      ctx.value.lineWidth = 2;
-      ctx.value.strokeRect(x, y, barWidth, barHeight);
-
+      // ctx.value.fillStyle = "#000";
+      // ctx.value.lineWidth = 2;
+      // ctx.value.strokeRect(x, y, barWidth, barHeight);
       //막대 별 rect 추가
       groupObj[bar] = {
         value,
         x,
         y,
+        labelInfo: props.legendLabels[barIdx],
+        label: `항목 ${groupIdx + 1}`,
         width: barWidth,
         height: barHeight,
       };
@@ -173,7 +177,14 @@ const drawBars = (chartPadding, chartWidth, chartHeight, maxValue) => {
 const hideTooltip = () => {
   tooltip.value.visible = false;
 };
-const tooltip = ref({ visible: false, text: "", x: 0, y: 0 });
+const tooltip = ref({
+  visible: false,
+  labelInfo: "",
+  label: "",
+  text: "",
+  x: 0,
+  y: 0,
+});
 // 🖱 마우스 위치 감지 및 툴팁 표시
 const handleMouseMove = (event) => {
   if (!ctx.value) return;
@@ -185,17 +196,18 @@ const handleMouseMove = (event) => {
 
   chartDataWithRects.value.forEach((group) => {
     Object.keys(group).forEach((data) => {
-      const { value, x, y, width, height } = group[data];
+      const { labelInfo, label, value, x, y, width, height } = group[data];
       if (
         mouseX >= x &&
         mouseX <= x + width &&
         mouseY >= y &&
         mouseY <= y + height
       ) {
-        console.log(value);
         tooltip.value = {
           visible: true,
-          text: `${data.label}: ${value}`,
+          labelInfo,
+          label: label,
+          text: `${value}`,
           x: event.clientX,
           y: event.clientY - 20,
         };
