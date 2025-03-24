@@ -69,7 +69,7 @@ const props = defineProps({
  */
 const scaleFactor = ref(1); // 줌 스케일 기본 크기 1 설정
 const newScale = ref();
-const minScale = 0.5;
+const minScale = 0.8;
 const maxScale = 2;
 const offsetX = ref(0); // 줌 기준점
 const offsetY = ref(0);
@@ -83,7 +83,17 @@ const handleZoom = (event) => {
   const mouseY = event.clientY - rect.top;
 
   newScale.value =
-    scaleFactor.value - (event.deltaY > 0 ? zoomIntensity : -zoomIntensity); // 확대 & 축소
+    scaleFactor.value - (event.deltaY > 0 ? zoomIntensity : -zoomIntensity); // 휠 방향 확대 & 축소
+
+  // 줌 한계 설정
+  if (newScale.value < minScale) newScale.value = minScale;
+  if (newScale.value > maxScale) newScale.value = maxScale;
+
+  // 줌 기준점 보정 (마우스 위치 중심으로 줌)
+  offsetX.value =
+    mouseX - (mouseX - offsetX.value) * (newScale.value / scaleFactor.value);
+  offsetY.value =
+    mouseY - (mouseY - offsetY.value) * (newScale.value / scaleFactor.value);
 
   scaleFactor.value = newScale.value;
   drawChart(); // 다시 그리기
@@ -251,7 +261,6 @@ const drawBars = (chartPadding, chartWidth, chartHeight, maxValue) => {
       chartHeight + 20
     );
   });
-  ctx.value.restore(); // 변환 상태 복구
 };
 
 /**
@@ -268,7 +277,8 @@ const drawChart = () => {
   // 초기화
   ctx.value.clearRect(0, 0, props.width, props.height);
 
-  ctx.value.save(); //이전 상태 저장
+  // 줌인아웃
+  ctx.value.save(); //이전(초기) 상태 저장
   ctx.value.translate(offsetX.value, offsetY.value); // 줌 기준점 이동
   ctx.value.scale(scaleFactor.value, scaleFactor.value); // 줌 크기 적용
 
@@ -292,12 +302,11 @@ const drawChart = () => {
 
   // Draw the axis : x,y 축 그리기
   drawAxis(chartPadding, chartWidth, chartHeight);
-
   // Draw the scale : y축 라벨 숫자
   drawScale(chartPadding, chartHeight, maxValue);
-
   // Draw the bars  : 실제 그래프 그리기
   drawBars(chartPadding, chartWidth, chartHeight, maxValue);
+  ctx.value.restore(); // save()로 저장한 이전(초기) 상태로 복구
 };
 
 onMounted(() => {
