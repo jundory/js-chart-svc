@@ -8,7 +8,7 @@
       :legendLabels="['범례 1', '범례 2']"
       :colors="['#FF6384', '#36A2EB']"
     />
-    <WebGLBarChart
+    <!-- <WebGLBarChart
       :data="chartData"
       :width="800"
       :height="500"
@@ -23,7 +23,7 @@
       chartTitle="WebGL 3D 막대 차트"
       :legendLabels="['범례 1', '범례 2']"
       :colors="['#FF6384', '#36A2EB']"
-    />
+    /> -->
 
     <!-- <PixiBarChart
       :data="chartData"

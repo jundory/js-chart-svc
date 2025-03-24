@@ -64,10 +64,81 @@ const props = defineProps({
   },
 });
 
-const chartCanvas = ref(null);
-const ctx = ref(null);
+/**
+ * @description 줌인아웃
+ */
+const scaleFactor = ref(1); // 줌 스케일 기본 크기 1 설정
+const newScale = ref();
+const minScale = 0.5;
+const maxScale = 2;
+const offsetX = ref(0); // 줌 기준점
+const offsetY = ref(0);
 
-// 축
+const handleZoom = (event) => {
+  event.preventDefault();
+
+  const zoomIntensity = 0.1; // 줌 강도 조절
+  const rect = chartCanvas.value.getBoundingClientRect(); //캔버스의 위치와 크기 정보를 화면 좌표 기준으로 저장
+  const mouseX = event.clientX - rect.left; // rect를 빼서 캔버스 내부 좌표로 변환
+  const mouseY = event.clientY - rect.top;
+
+  newScale.value =
+    scaleFactor.value - (event.deltaY > 0 ? zoomIntensity : -zoomIntensity); // 확대 & 축소
+
+  scaleFactor.value = newScale.value;
+  drawChart(); // 다시 그리기
+};
+
+/**
+ * @description 툴팁 기능
+ */
+const hideTooltip = () => {
+  tooltip.value.visible = false;
+};
+const tooltip = ref({
+  visible: false,
+  labelInfo: "",
+  label: "",
+  text: "",
+  x: 0,
+  y: 0,
+});
+const handleMouseMove = (event) => {
+  if (!ctx.value) return;
+  const rect = chartCanvas.value.getBoundingClientRect(); //캔버스의 위치와 크기 정보를 화면 좌표 기준으로 저장
+  const mouseX = event.clientX - rect.left; // rect를 빼서 캔버스 내부 좌표로 변환
+  const mouseY = event.clientY - rect.top;
+
+  tooltip.value.visible = false; // 초기화
+
+  chartDataWithRects.value.forEach((group) => {
+    Object.keys(group).forEach((data) => {
+      const { labelInfo, label, value, x, y, width, height } = group[data];
+      if (
+        mouseX >= x &&
+        mouseX <= x + width &&
+        mouseY >= y &&
+        mouseY <= y + height
+      ) {
+        tooltip.value = {
+          visible: true,
+          labelInfo,
+          label: label,
+          text: `${value}`,
+          x: event.clientX,
+          y: event.clientY - 20,
+        };
+      }
+    });
+  });
+};
+
+/**
+ * 차트의 x,y 축 드로잉
+ * @param chartPadding 캔버스 여백
+ * @param chartWidth 캔버스 너비
+ * @param chartHeight 캔버스 높이
+ */
 const drawAxis = (chartPadding, chartWidth, chartHeight) => {
   ctx.value.beginPath(); // 기존 경로 초기화 후 새로 선 그리기
   //Y축
@@ -80,7 +151,12 @@ const drawAxis = (chartPadding, chartWidth, chartHeight) => {
   ctx.value.stroke(); //실제 선을 그림
 };
 
-// 눈금 & y 레이블
+/**
+ * y축의 눈금 및 레이블 표시
+ * @param chartPadding 캔버스 여백
+ * @param chartHeight 캔버스 높이
+ * @param maxValue 차트 데이터 최대값
+ */
 const drawScale = (chartPadding, chartHeight, maxValue) => {
   const scaleSteps = 5; // 눈금 5개로 설정
   ctx.value.lineWidth = 0.5; // 눈금선 두께
@@ -108,8 +184,14 @@ const drawScale = (chartPadding, chartHeight, maxValue) => {
   }
 };
 
+/**
+ * 범례 드로잉 및 x축 레이블 표시
+ * @param chartPadding 캔버스 여백
+ * @param chartWidth 캔버스 너비
+ * @param chartHeight 캔버스 높이
+ * @param maxValue 차트 데이터 최대값
+ */
 const chartDataWithRects = ref([]);
-// 범례 & x 레이블
 const drawBars = (chartPadding, chartWidth, chartHeight, maxValue) => {
   const legendKeysArr = Object.keys(props.data[0]); // return ['legend_1', 'legend_2']
   // 막대 너비 및 간격 계산
@@ -126,11 +208,11 @@ const drawBars = (chartPadding, chartWidth, chartHeight, maxValue) => {
 
       // 막대 그리기 시작할 x, y 좌표 계산
       const x =
-        chartPadding +
-        groupIdx * groupWidth +
-        (barIdx + 1) * barSpacing +
-        barIdx * barWidth;
-      const y = chartHeight - barHeight;
+        chartPadding + //차트의 왼쪽 여백 (그래프 전체가 좌측에 붙지 않도록)
+        groupIdx * groupWidth + //해당 그룹이 몇 번째 위치인지 계산 (0기준 그룹별 이동 거리)
+        (barIdx + 1) * barSpacing + //막대 사이 간격 (첫 번째 막대 앞에도 간격 필요)
+        barIdx * barWidth; //그룹 내 개별 막대가 차지하는 넓이 (막대 위치 이동)
+      const y = chartHeight - barHeight - 1;
 
       // 막대 그리기
       ctx.value.fillStyle = props.colors[barIdx % props.colors.length];
@@ -169,53 +251,15 @@ const drawBars = (chartPadding, chartWidth, chartHeight, maxValue) => {
       chartHeight + 20
     );
   });
+  ctx.value.restore(); // 변환 상태 복구
 };
 
 /**
- * 툴팁 관련
+ * @description 차트 초기 설정 및 드로잉 시작지점
  */
-const hideTooltip = () => {
-  tooltip.value.visible = false;
-};
-const tooltip = ref({
-  visible: false,
-  labelInfo: "",
-  label: "",
-  text: "",
-  x: 0,
-  y: 0,
-});
-// 🖱 마우스 위치 감지 및 툴팁 표시
-const handleMouseMove = (event) => {
-  if (!ctx.value) return;
-  const rect = chartCanvas.value.getBoundingClientRect();
-  const mouseX = event.clientX - rect.left;
-  const mouseY = event.clientY - rect.top;
 
-  tooltip.value.visible = false; // 초기화
-
-  chartDataWithRects.value.forEach((group) => {
-    Object.keys(group).forEach((data) => {
-      const { labelInfo, label, value, x, y, width, height } = group[data];
-      if (
-        mouseX >= x &&
-        mouseX <= x + width &&
-        mouseY >= y &&
-        mouseY <= y + height
-      ) {
-        tooltip.value = {
-          visible: true,
-          labelInfo,
-          label: label,
-          text: `${value}`,
-          x: event.clientX,
-          y: event.clientY - 20,
-        };
-      }
-    });
-  });
-};
-
+const chartCanvas = ref(null);
+const ctx = ref(null);
 const drawChart = () => {
   if (!chartCanvas.value) return;
 
@@ -223,6 +267,10 @@ const drawChart = () => {
   ctx.value = chartCanvas.value.getContext("2d");
   // 초기화
   ctx.value.clearRect(0, 0, props.width, props.height);
+
+  ctx.value.save(); //이전 상태 저장
+  ctx.value.translate(offsetX.value, offsetY.value); // 줌 기준점 이동
+  ctx.value.scale(scaleFactor.value, scaleFactor.value); // 줌 크기 적용
 
   // 캔버스 크기 설정
   const chartWidth = props.width;
@@ -254,6 +302,7 @@ const drawChart = () => {
 
 onMounted(() => {
   drawChart();
+  chartCanvas.value.addEventListener("wheel", handleZoom);
 });
 
 watch(
