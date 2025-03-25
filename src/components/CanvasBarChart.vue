@@ -4,7 +4,7 @@
     <div class="chart">
       <canvas
         ref="chartCanvas"
-        @mousemove="handleMouseMove"
+        @mousemove="handleTooltipMove"
         @mouseleave="hideTooltip"
         :width="width"
         :height="height"
@@ -65,21 +65,50 @@ const props = defineProps({
 });
 
 /**
+ * @description 드래그
+ */
+const isDragging = ref(false);
+const lastMouseX = ref(0);
+const lastMouseY = ref(0);
+
+const handleMouseUp = () => {
+  isDragging.value = false;
+};
+const handleMouseClick = (event) => {
+  isDragging.value = true;
+  lastMouseX.value = event.clientX;
+  lastMouseY.value = event.clientY;
+};
+const handleMouseMove = (event) => {
+  if (!isDragging.value) return;
+  const xGap = event.clientX - lastMouseX.value;
+  const yGap = event.clientY - lastMouseY.value;
+
+  offsetX.value = offsetX.value + xGap;
+  offsetY.value = offsetY.value + yGap;
+
+  lastMouseX.value = event.clientX;
+  lastMouseY.value = event.clientY;
+  drawChart();
+};
+
+/**
  * @description 줌인아웃
  */
-const scaleFactor = ref(1); // 줌 스케일 기본 크기 1 설정
-const newScale = ref();
+const scaleFactor = ref(1); // 줌 크기(배율) 기본 1 설정
+const newScale = ref(); // 새롭게 적용될 줌 크기
 const minScale = 0.8;
 const maxScale = 2;
-const offsetX = ref(0); // 줌 기준점
+// 줌 기준점
+const offsetX = ref(0);
 const offsetY = ref(0);
 
 const handleZoom = (event) => {
   event.preventDefault();
 
-  const zoomIntensity = 0.1; // 줌 강도 조절
+  const zoomIntensity = 0.2; // 줌 강도 조절
   const rect = chartCanvas.value.getBoundingClientRect(); //캔버스의 위치와 크기 정보를 화면 좌표 기준으로 저장
-  const mouseX = event.clientX - rect.left; // rect를 빼서 캔버스 내부 좌표로 변환
+  const mouseX = event.clientX - rect.left; // 마우스 절대 위치에서 rect를 빼서 캔버스 내부 좌표로 변환
   const mouseY = event.clientY - rect.top;
 
   newScale.value =
@@ -89,11 +118,14 @@ const handleZoom = (event) => {
   if (newScale.value < minScale) newScale.value = minScale;
   if (newScale.value > maxScale) newScale.value = maxScale;
 
-  // 줌 기준점 보정 (마우스 위치 중심으로 줌)
+  // 줌 기준점 보정 (인앤아웃 시 중심을 마우스 위치로 설정 ***기본값은 (0,0))
   offsetX.value =
     mouseX - (mouseX - offsetX.value) * (newScale.value / scaleFactor.value);
+  // (현재 마우스 위치와 현재 기준점 사이 거리) * (줌 후 새로운 비율 / 줌 이전 기존 배율)
   offsetY.value =
     mouseY - (mouseY - offsetY.value) * (newScale.value / scaleFactor.value);
+
+  console.log("x,y 좌표값", offsetX.value, offsetY.value);
 
   scaleFactor.value = newScale.value;
   drawChart(); // 다시 그리기
@@ -113,7 +145,7 @@ const tooltip = ref({
   x: 0,
   y: 0,
 });
-const handleMouseMove = (event) => {
+const handleTooltipMove = (event) => {
   if (!ctx.value) return;
   const rect = chartCanvas.value.getBoundingClientRect(); //캔버스의 위치와 크기 정보를 화면 좌표 기준으로 저장
   const mouseX = event.clientX - rect.left; // rect를 빼서 캔버스 내부 좌표로 변환
@@ -311,7 +343,13 @@ const drawChart = () => {
 
 onMounted(() => {
   drawChart();
+  //wheel in&out
   chartCanvas.value.addEventListener("wheel", handleZoom);
+  //mouse drag
+  chartCanvas.value.addEventListener("mousedown", handleMouseClick);
+  chartCanvas.value.addEventListener("mousemove", handleMouseMove);
+  chartCanvas.value.addEventListener("mouseup", handleMouseUp);
+  chartCanvas.value.addEventListener("mouseleave", handleMouseUp);
 });
 
 watch(
@@ -322,9 +360,9 @@ watch(
   { deep: true }
 );
 
-watch([() => props.width, () => props.height], () => {
-  drawChart();
-});
+// watch([() => props.width, () => props.height], () => {
+//   drawChart();
+// });
 </script>
 
 <style scoped>
