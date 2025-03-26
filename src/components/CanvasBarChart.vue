@@ -30,7 +30,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, defineProps } from "vue";
+import { ref, reactive, onMounted, watch, defineProps } from "vue";
 
 // props object로 타입 지정 및 기본값 설정
 const props = defineProps({
@@ -65,42 +65,46 @@ const props = defineProps({
 });
 
 // 줌 기준점
-const offsetX = ref(0);
-const offsetY = ref(0);
+const offset = reactive({
+  x: 0,
+  y: 0,
+});
 
 /**
  * @description 드래그
  */
 const isDragging = ref(false);
-const lastMouseX = ref(0);
-const lastMouseY = ref(0);
+const lastMouse = reactive({
+  x: 0,
+  y: 0,
+});
 
 const handleMouseUp = () => {
   isDragging.value = false;
 };
 const handleMouseClick = (event) => {
   isDragging.value = true;
-  lastMouseX.value = event.clientX;
-  lastMouseY.value = event.clientY;
+  lastMouse.x = event.clientX;
+  lastMouse.y = event.clientY;
 };
 const handleMouseMove = (event) => {
   if (!isDragging.value) return;
-  const xGap = event.clientX - lastMouseX.value;
-  const yGap = event.clientY - lastMouseY.value;
+  const xGap = event.clientX - lastMouse.x;
+  const yGap = event.clientY - lastMouse.y;
 
-  offsetX.value = offsetX.value + xGap;
-  offsetY.value = offsetY.value + yGap;
+  offset.x = offset.x + xGap;
+  offset.y = offset.y + yGap;
 
-  lastMouseX.value = event.clientX;
-  lastMouseY.value = event.clientY;
+  lastMouse.x = event.clientX;
+  lastMouse.y = event.clientY;
   drawChart();
 };
 
 /**
- * @description 줌인아웃
+ * @description 줌인앤아웃
  */
 const scaleFactor = ref(1); // 줌 크기(배율) 기본 1 설정
-const newScale = ref(); // 새롭게 적용될 줌 크기
+const newScale = ref(null); // 새롭게 적용될 줌 크기
 
 const handleZoom = (event) => {
   event.preventDefault();
@@ -120,13 +124,13 @@ const handleZoom = (event) => {
   if (newScale.value > maxScale) newScale.value = maxScale;
 
   // 줌 기준점 보정 (인앤아웃 시 중심을 마우스 위치로 설정 ***기본값은 (0,0))
-  offsetX.value =
-    mouseX - (mouseX - offsetX.value) * (newScale.value / scaleFactor.value);
+  offset.x =
+    mouseX - (mouseX - offset.x) * (newScale.value / scaleFactor.value);
   // (현재 마우스 위치와 현재 기준점 사이 거리) * (줌 후 새로운 비율 / 줌 이전 기존 배율)
-  offsetY.value =
-    mouseY - (mouseY - offsetY.value) * (newScale.value / scaleFactor.value);
+  offset.y =
+    mouseY - (mouseY - offset.y) * (newScale.value / scaleFactor.value);
 
-  console.log("x,y 좌표값", offsetX.value, offsetY.value);
+  console.log("x,y 좌표값", offset.x, offset.y);
 
   scaleFactor.value = newScale.value;
   drawChart(); // 다시 그리기
@@ -136,9 +140,9 @@ const handleZoom = (event) => {
  * @description 툴팁 기능
  */
 const hideTooltip = () => {
-  tooltip.value.visible = false;
+  tooltip.visible = false;
 };
-const tooltip = ref({
+const tooltip = reactive({
   visible: false,
   labelInfo: "",
   label: "",
@@ -155,11 +159,10 @@ const handleTooltipMove = (event) => {
    * 2. 드래그로 이동되어 바뀐(xGap, yGap이 더해진) offset값을 빼서, 차트의 새로운 위치 재계산
    * 3. scaleFactor(확대 비율)로 나눠서, 줌인&아웃으로 바뀐 차트의 비율에 맞게 마우스 위치도 변환
    */
-  const mouseX =
-    (event.clientX - rect.left - offsetX.value) / scaleFactor.value;
-  const mouseY = (event.clientY - rect.top - offsetY.value) / scaleFactor.value;
+  const mouseX = (event.clientX - rect.left - offset.x) / scaleFactor.value;
+  const mouseY = (event.clientY - rect.top - offset.y) / scaleFactor.value;
 
-  tooltip.value.visible = false; // 초기화
+  tooltip.visible = false; // 초기화
 
   chartDataWithRects.value.forEach((group) => {
     Object.keys(group).forEach((data) => {
@@ -170,14 +173,12 @@ const handleTooltipMove = (event) => {
         mouseY >= y &&
         mouseY <= y + height
       ) {
-        tooltip.value = {
-          visible: true,
-          labelInfo,
-          label: label,
-          text: `${value}`,
-          x: event.clientX,
-          y: event.clientY - 20,
-        };
+        tooltip.visible = true;
+        tooltip.labelInfo = labelInfo;
+        tooltip.label = label;
+        tooltip.text = `${value}`;
+        tooltip.x = event.clientX;
+        tooltip.y = event.clientY - 20;
       }
     });
   });
@@ -319,7 +320,7 @@ const drawChart = () => {
 
   // 줌인아웃
   ctx.value.save(); //이전(초기) 상태 저장
-  ctx.value.translate(offsetX.value, offsetY.value); // 줌 기준점 이동
+  ctx.value.translate(offset.x, offset.y); // 줌 기준점 이동
   ctx.value.scale(scaleFactor.value, scaleFactor.value); // 줌 크기 적용
 
   // 캔버스 크기 설정
@@ -328,17 +329,9 @@ const drawChart = () => {
   const chartPadding = 40;
 
   // 데이터 중 최댓값 찾기
-  let maxValue = 0;
-  props.data.forEach((item) => {
-    Object.keys(item).forEach((key) => {
-      if (key.startsWith("legend_") && item[key] > maxValue) {
-        maxValue = item[key];
-      }
-    });
-  });
-
-  // 최댓값이 10의 배수가 되도록 올림
-  maxValue = maxValue * 1.1;
+  const maxValue =
+    Math.max(...props.data.map((group) => Math.max(...Object.values(group)))) *
+    1.1; //막대가 차트 높이를 벗어나지 않게 (barHeight 비율은 maxValue와 반비례)
 
   // Draw the axis : x,y 축 그리기
   drawAxis(chartPadding, chartWidth, chartHeight);
