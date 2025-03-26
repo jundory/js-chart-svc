@@ -64,6 +64,10 @@ const props = defineProps({
   },
 });
 
+// 줌 기준점
+const offsetX = ref(0);
+const offsetY = ref(0);
+
 /**
  * @description 드래그
  */
@@ -97,15 +101,12 @@ const handleMouseMove = (event) => {
  */
 const scaleFactor = ref(1); // 줌 크기(배율) 기본 1 설정
 const newScale = ref(); // 새롭게 적용될 줌 크기
-const minScale = 0.8;
-const maxScale = 2;
-// 줌 기준점
-const offsetX = ref(0);
-const offsetY = ref(0);
 
 const handleZoom = (event) => {
   event.preventDefault();
 
+  const minScale = 0.8;
+  const maxScale = 2;
   const zoomIntensity = 0.2; // 줌 강도 조절
   const rect = chartCanvas.value.getBoundingClientRect(); //캔버스의 위치와 크기 정보를 화면 좌표 기준으로 저장
   const mouseX = event.clientX - rect.left; // 마우스 절대 위치에서 rect를 빼서 캔버스 내부 좌표로 변환
@@ -148,8 +149,9 @@ const tooltip = ref({
 const handleTooltipMove = (event) => {
   if (!ctx.value) return;
   const rect = chartCanvas.value.getBoundingClientRect(); //캔버스의 위치와 크기 정보를 화면 좌표 기준으로 저장
-  const mouseX = event.clientX - rect.left; // rect를 빼서 캔버스 내부 좌표로 변환
-  const mouseY = event.clientY - rect.top;
+  const mouseX =
+    (event.clientX - rect.left - offsetX.value) / scaleFactor.value; // 현재 마우스 커서 위치 계산 (rect를 빼서 캔버스 내부 좌표로 변환)
+  const mouseY = (event.clientY - rect.top - offsetY.value) / scaleFactor.value; // 현재 기준점인 offset을 빼서 드래그된 차트 새로운 위치 계산
 
   tooltip.value.visible = false; // 초기화
 
