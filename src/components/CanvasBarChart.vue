@@ -149,9 +149,15 @@ const tooltip = ref({
 const handleTooltipMove = (event) => {
   if (!ctx.value) return;
   const rect = chartCanvas.value.getBoundingClientRect(); //캔버스의 위치와 크기 정보를 화면 좌표 기준으로 저장
+  /**
+   * 현재 마우스 커서 좌표값 구하는 공식
+   * 1. 현 커서 위치에서 rect를 빼서, 캔버스 내부 좌표로 변환
+   * 2. 드래그로 이동되어 바뀐(xGap, yGap이 더해진) offset값을 빼서, 차트의 새로운 위치 재계산
+   * 3. scaleFactor(확대 비율)로 나눠서, 줌인&아웃으로 바뀐 차트의 비율에 맞게 마우스 위치도 변환
+   */
   const mouseX =
-    (event.clientX - rect.left - offsetX.value) / scaleFactor.value; // 현재 마우스 커서 위치 계산 (rect를 빼서 캔버스 내부 좌표로 변환)
-  const mouseY = (event.clientY - rect.top - offsetY.value) / scaleFactor.value; // 현재 기준점인 offset을 빼서 드래그된 차트 새로운 위치 계산
+    (event.clientX - rect.left - offsetX.value) / scaleFactor.value;
+  const mouseY = (event.clientY - rect.top - offsetY.value) / scaleFactor.value;
 
   tooltip.value.visible = false; // 초기화
 
