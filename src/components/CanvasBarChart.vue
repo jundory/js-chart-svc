@@ -58,7 +58,7 @@ const props = defineProps({
   },
 });
 
-// 줌 기준점
+// 차트 기본 좌표
 const offset = reactive({
   x: 0,
   y: 0,
@@ -88,6 +88,7 @@ const handleMouseMove = (event) => {
 
   offset.x = offset.x + xGap;
   offset.y = offset.y + yGap;
+  console.log(" 드래그 적용 new 좌표", offset.x, offset.y);
 
   lastMouse.x = event.clientX;
   lastMouse.y = event.clientY;
@@ -95,7 +96,7 @@ const handleMouseMove = (event) => {
 };
 
 /**
- * @description 줌인앤아웃
+ * @description 줌 인앤아웃
  */
 const scaleFactor = ref(1); // 줌 크기(배율) 기본 1 설정
 const newScale = ref(null); // 새롭게 적용될 줌 크기
@@ -124,7 +125,7 @@ const handleZoom = (event) => {
   offset.y =
     mouseY - (mouseY - offset.y) * (newScale.value / scaleFactor.value);
 
-  console.log("x,y 좌표값", offset.x, offset.y);
+  console.log(" 줌 적용 new 좌표", offset.x, offset.y);
 
   scaleFactor.value = newScale.value;
   drawChart(); // 다시 그리기
@@ -176,6 +177,32 @@ const handleTooltipMove = (event) => {
       }
     });
   });
+};
+
+const drawBgLines = (chartPadding, chartWidth, chartHeight, maxValue) => {
+  ctx.value.strokeStyle = "#ddd"; // 선 색상 (연한 회색)
+  ctx.value.lineWidth = 1; // 선 두께
+  const scaleSteps = 5;
+  // 가로선 (y축 기준)
+  for (let i = 0; i <= scaleSteps; i++) {
+    // const y = chartPadding + chartHeight * (1 - i / 10);
+    const y = chartHeight - (i * (chartHeight - 10)) / scaleSteps;
+
+    ctx.value.beginPath();
+    ctx.value.moveTo(chartPadding, y);
+    ctx.value.lineTo(chartPadding + chartWidth, y);
+    ctx.value.stroke();
+  }
+
+  // 세로선 (x축 기준)
+  const groupWidth = (chartWidth - chartPadding - 20) / props.data.length; // 막대 그룹 간격
+  for (let i = 0; i <= props.data.length; i++) {
+    const x = chartPadding + i * groupWidth;
+    ctx.value.beginPath();
+    ctx.value.moveTo(x, 10);
+    ctx.value.lineTo(x, chartHeight);
+    ctx.value.stroke();
+  }
 };
 
 /**
@@ -331,6 +358,8 @@ const drawChart = () => {
   drawAxis(chartPadding, chartWidth, chartHeight);
   // Draw the scale : y축 라벨 숫자
   drawScale(chartPadding, chartHeight, maxValue);
+  //
+  drawBgLines(chartPadding, chartWidth, chartHeight, maxValue);
   // Draw the bars  : 실제 그래프 그리기
   drawBars(chartPadding, chartWidth, chartHeight, maxValue);
   ctx.value.restore(); // save()로 저장한 이전(초기) 상태로 복구
