@@ -10,7 +10,7 @@
         :height="height"
       ></canvas>
     </div>
-    <div class="legend" v-if="showLegend">
+    <div class="legend" v-if="legendLabels">
       <div v-for="(color, index) in colors" :key="index" class="legend-item">
         <div class="color-box" :style="{ backgroundColor: color }"></div>
         <div class="legend-label">{{ legendLabels[index] }}</div>
@@ -48,15 +48,9 @@ const props = defineProps({
   },
   chartTitle: {
     type: String,
-    default: "",
-  },
-  showLegend: {
-    type: Boolean,
-    default: true,
   },
   legendLabels: {
     type: Array,
-    default: () => ["legend_1", "legend_2"],
   },
   colors: {
     type: Array,
@@ -284,7 +278,7 @@ const drawBars = (chartPadding, chartWidth, chartHeight, maxValue) => {
         value,
         x,
         y,
-        labelInfo: props.legendLabels[barIdx],
+        labelInfo: props.legendLabels ? props.legendLabels[barIdx] : null,
         label: `항목 ${groupIdx + 1}`,
         width: barWidth,
         height: barHeight,
