@@ -179,7 +179,7 @@ const handleTooltipMove = (event) => {
   });
 };
 
-const drawBgLines = (chartPadding, chartWidth, chartHeight, maxValue) => {
+const drawBgLines = (chartPadding, chartWidth, chartHeight) => {
   ctx.value.strokeStyle = "#ddd"; // 선 색상 (연한 회색)
   ctx.value.lineWidth = 1; // 선 두께
   const scaleSteps = 5;
@@ -230,20 +230,20 @@ const drawAxis = (chartPadding, chartWidth, chartHeight) => {
  * @param maxValue 차트 데이터 최대값
  */
 const drawScale = (chartPadding, chartHeight, maxValue) => {
-  const scaleSteps = 5; // 눈금 5개로 설정
   ctx.value.lineWidth = 0.5; // 눈금선 두께
   ctx.value.strokeStyle = "#999"; // 눈금선 색상
   ctx.value.fillStyle = "#333"; // 텍스트 색상
   ctx.value.font = "12px Arial"; // 글꼴
   ctx.value.textAlign = "right"; // 정렬
 
+  const scaleSteps = 5; // 눈금 5개로 설정
   for (let i = 0; i <= scaleSteps; i++) {
     // Y축 눈금 위치 계산 (***위쪽이 0, 아래쪽이 최대값)
     //  chartHeight = y축 0점, '-10'으로 라벨이 캔버스 위로 이탈 방지
     const y = chartHeight - (i * (chartHeight - 10)) / scaleSteps;
 
     //  눈금 값 계산
-    const value = Math.round((i * maxValue) / scaleSteps); // 최대값을 눈금 수로 나눈 후 반올림
+    const value = Math.ceil((i * maxValue) / scaleSteps); // 최대값을 눈금 수로 나눈 후 올림 처리
 
     // 눈금 선 그리기
     ctx.value.beginPath();
