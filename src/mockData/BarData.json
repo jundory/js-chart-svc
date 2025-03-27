@@ -1,0 +1,64 @@
+{
+  "data": [
+    {
+      "sales": 45,
+      "profit": 80,
+      "expenses": 60,
+      "growth_rate": 90
+    },
+    {
+      "sales": 35,
+      "profit": 70,
+      "expenses": 50,
+      "growth_rate": 85
+    },
+    {
+      "sales": 55,
+      "profit": 75,
+      "expenses": 65,
+      "growth_rate": 95
+    },
+    {
+      "sales": 40,
+      "profit": 60,
+      "expenses": 55,
+      "growth_rate": 70
+    },
+    {
+      "sales": 50,
+      "profit": 85,
+      "expenses": 75,
+      "growth_rate": 100
+    },
+    {
+      "sales": 60,
+      "profit": 90,
+      "expenses": 80,
+      "growth_rate": 110
+    },
+    {
+      "sales": 60,
+      "profit": 90,
+      "expenses": 80,
+      "growth_rate": 110
+    }
+  ],
+  "legends": [
+    {
+      "key": "sales",
+      "label": "매출"
+    },
+    {
+      "key": "profit",
+      "label": "이익"
+    },
+    {
+      "key": "expenses",
+      "label": "비용"
+    },
+    {
+      "key": "growth_rate",
+      "label": "성장률"
+    }
+  ]
+}

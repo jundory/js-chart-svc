@@ -1,13 +1,13 @@
 <template>
   <div class="app">
     <CanvasBarChart
-      :data="chartData"
+      :data="barData"
       :width="800"
       :height="500"
       chartTitle="Canvas 막대 차트"
-      :legendLabels="['범례 1', '범례 2']"
-      :colors="['#FF6384', '#36A2EB']"
+      :legends="barLegends"
     />
+    <!-- :colors="['#FF6384', '#36A2EB']" -->
     <!-- <WebGLBarChart
       :data="chartData"
       :width="800"
@@ -45,47 +45,31 @@
   </div>
 </template>
 
-<script>
-import { ref } from "vue";
+<script setup>
+import { ref, onMounted } from "vue";
 import CanvasBarChart from "./components/CanvasBarChart.vue";
 import WebGLBarChart from "./components/WebGLBarChart.vue";
 import Bar3DChart from "./components/Bar3DChart.vue";
 // import PixiBarChart from "./components/PixiBarChart.vue";
 import RadarChart from "./components/RadarChart.vue";
 
-export default {
-  name: "App",
-  components: {
-    // PixiBarChart,
-    Bar3DChart,
-    CanvasBarChart,
-    WebGLBarChart,
-    RadarChart,
-  },
-  setup() {
-    const chartData = ref([
-      { legend_1: 10, legend_2: 90 },
-      { legend_1: 20, legend_2: 80 },
-      { legend_1: 30, legend_2: 70 },
-      { legend_1: 40, legend_2: 60 },
-      { legend_1: 50, legend_2: 50 },
-    ]);
-    const radarData = ref([
-      { label: "항목1", values: [80, 50, 30, 70, 60] },
-      { label: "항목2", values: [60, 70, 40, 20, 10] },
-      { label: "항목3", values: [40, 75, 50, 30, 40] },
-      { label: "항목4", values: [20, 60, 30, 60, 50] },
-      { label: "항목5", values: [10, 25, 40, 10, 20] },
-    ]);
-    const categories = ref(["속도", "안정성", "사용성", "디자인", "기능성"]);
+import BarData from "./mockData/BarData.json";
 
-    return {
-      chartData,
-      categories,
-      radarData,
-    };
-  },
-};
+const barData = BarData.data;
+const barLegends = ref();
+const radarData = ref([
+  { label: "항목1", values: [80, 50, 30, 70, 60] },
+  { label: "항목2", values: [60, 70, 40, 20, 10] },
+  { label: "항목3", values: [40, 75, 50, 30, 40] },
+  { label: "항목4", values: [20, 60, 30, 60, 50] },
+  { label: "항목5", values: [10, 25, 40, 10, 20] },
+]);
+const categories = ref(["속도", "안정성", "사용성", "디자인", "기능성"]);
+
+onMounted(() => {
+  barLegends.value = BarData.legends.map((legend) => legend.label);
+  console.log("barLegends", barLegends.value);
+});
 </script>
 
 <style scoped>
