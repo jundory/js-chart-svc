@@ -30,7 +30,7 @@
     >
       <div>{{ tooltip.label }}</div>
       <br />
-      {{ tooltip.labelInfo }}:
+      {{ tooltip.labelInfo }} :
       {{ tooltip.text }}
     </div>
   </div>
@@ -315,7 +315,9 @@ const drawBars = (chartPadding, chartWidth, chartHeight, maxValue) => {
       // 막대 위에 값 표시
       const isTopBar = barHeight > chartHeight - 20;
       const labelY = isTopBar ? y + 15 : Math.max(y - 5, 15); // 최소 y 좌표를 15로 설정
-      ctx.value.fillStyle = "#333"; // 글씨 색상
+      isTopBar
+        ? (ctx.value.fillStyle = "#fff")
+        : (ctx.value.fillStyle = "#333"); // 글씨 색상
       ctx.value.font = "12px Arial";
       ctx.value.textAlign = "center";
       ctx.value.fillText(value.toString(), x + barWidth / 2, labelY);
