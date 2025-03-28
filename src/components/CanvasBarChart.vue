@@ -13,7 +13,7 @@
     <div class="legend" v-if="props.legends">
       <div
         v-for="(label, index) in props.legends"
-        :key="index"
+        :key="label"
         class="legend-item"
       >
         <div
@@ -58,6 +58,10 @@ const props = defineProps({
   },
   legends: {
     type: Array,
+  },
+  maxBarsLength: {
+    type: Number,
+    default: 3,
   },
   colors: {
     type: Array,
@@ -251,14 +255,18 @@ const drawScale = (chartPadding, chartHeight, maxValue) => {
   ctx.value.font = "12px Arial"; // 글꼴
   ctx.value.textAlign = "right"; // 정렬
 
-  const scaleSteps = 5; // 눈금 5개로 설정
-  for (let i = 0; i <= scaleSteps; i++) {
+  const niceMax = Math.ceil(maxValue / 50) * 50; // 최대값을 50 단위로 반올림*
+  const stepCount = niceMax / 50; //최대값 기준 눈금 갯수
+
+  // const scaleSteps = 5; // 눈금 5개로 설정
+  for (let i = 0; i <= stepCount; i++) {
     // Y축 눈금 위치 계산 (***위쪽이 0, 아래쪽이 최대값)
     //  chartHeight = y축 0점, '-10'으로 라벨이 캔버스 위로 이탈 방지
-    const y = chartHeight - (i * (chartHeight - 10)) / scaleSteps;
+    const y = chartHeight - (i * (chartHeight - 10)) / stepCount;
 
     //  눈금 값 계산
-    const value = Math.ceil((i * maxValue) / scaleSteps); // 최대값을 눈금 수로 나눈 후 올림 처리
+    const value = i * 50;
+    // const value = Math.ceil((i * maxValue) / scaleSteps); // 최대값을 눈금 수로 나눈 후 올림 처리
 
     // 눈금 선 그리기
     ctx.value.beginPath();
@@ -300,16 +308,17 @@ const drawBars = (chartPadding, chartWidth, chartHeight, maxValue) => {
         (barIdx + 1) * barSpacing + //막대 사이 간격 (첫 번째 막대 앞에도 간격 필요)
         barIdx * barWidth; //그룹 내 개별 막대가 차지하는 넓이 (막대 위치 이동)
       const y = chartHeight - barHeight - 1;
-
       // 막대 그리기
       ctx.value.fillStyle = props.colors[barIdx % props.colors.length];
       ctx.value.fillRect(x, y, barWidth, barHeight);
 
       // 막대 위에 값 표시
+      const isTopBar = barHeight > chartHeight - 20;
+      const labelY = isTopBar ? y + 15 : Math.max(y - 5, 15); // 최소 y 좌표를 15로 설정
       ctx.value.fillStyle = "#333"; // 글씨 색상
       ctx.value.font = "12px Arial";
       ctx.value.textAlign = "center";
-      ctx.value.fillText(value.toString(), x + barWidth / 2, y - 5);
+      ctx.value.fillText(value.toString(), x + barWidth / 2, labelY);
 
       // 직접 추가해본 테두리
       // ctx.value.fillStyle = "#000";
@@ -365,9 +374,9 @@ const drawChart = () => {
   const chartPadding = 40;
 
   // 데이터 중 최댓값 찾기
-  const maxValue =
-    Math.max(...props.data.map((group) => Math.max(...Object.values(group)))) *
-    1.1; //막대가 차트 높이를 벗어나지 않게 (barHeight 비율은 maxValue와 반비례)
+  const maxValue = calculateNiceMaxValue(
+    Math.max(...props.data.map((group) => Math.max(...Object.values(group))))
+  ); //막대가 차트 높이를 벗어나지 않게 (barHeight 비율은 maxValue와 반비례)
 
   // Draw the axis : x,y 축 그리기
   drawAxis(chartPadding, chartWidth, chartHeight);
@@ -399,9 +408,16 @@ watch(
   { deep: true }
 );
 
-// watch([() => props.width, () => props.height], () => {
-//   drawChart();
-// });
+// 최대값 눈금 계산기
+const calculateNiceMaxValue = (maxValue) => {
+  if (maxValue < 50) return 50; // 최소값 50 보장
+
+  // 50 단위로 반올림하되, maxValue를 초과하지 않도록 조정
+  const roundedMax = Math.ceil(maxValue / 50) * 50;
+
+  // 만약 반올림된 값이 maxValue보다 50 이상 크다면, maxValue에 가장 가까운 50 단위로 설정
+  return roundedMax - maxValue >= 50 ? roundedMax - 50 : roundedMax;
+};
 </script>
 
 <style scoped>

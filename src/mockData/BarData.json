@@ -34,13 +34,13 @@
       "sales": 60,
       "profit": 90,
       "expenses": 80,
-      "growth_rate": 110
+      "growth_rate": 30
     },
     {
       "sales": 60,
       "profit": 90,
       "expenses": 80,
-      "growth_rate": 110
+      "growth_rate": 70
     }
   ],
   "legends": [
