@@ -23,6 +23,8 @@
         <div class="legend-label">{{ legends[index] }}</div>
       </div>
     </div>
+    {{ tooltip }}
+
     <div
       v-if="tooltip.visible"
       class="tooltip"
@@ -177,8 +179,7 @@ const handleTooltipMove = (event) => {
   const mouseY = (event.clientY - rect.top - offset.y) / scaleFactor.value;
 
   tooltip.visible = false; // 초기화
-
-  chartDataWithRects.value.forEach((group) => {
+  chartDataArr.value.forEach((group) => {
     Object.keys(group).forEach((data) => {
       const { labelInfo, label, value, x, y, width, height } = group[data];
       if (
@@ -249,23 +250,20 @@ const drawAxis = (chartPadding, chartWidth, chartHeight) => {
  * @param maxValue 차트 데이터 최대값
  */
 const drawScale = (chartPadding, chartHeight, maxValue) => {
+  const { tickSize, stepCount } = calculateScaleSteps(maxValue, 5);
+
   ctx.value.lineWidth = 0.5; // 눈금선 두께
   ctx.value.strokeStyle = "#999"; // 눈금선 색상
   ctx.value.fillStyle = "#333"; // 텍스트 색상
   ctx.value.font = "12px Arial"; // 글꼴
   ctx.value.textAlign = "right"; // 정렬
 
-  const niceMax = Math.ceil(maxValue / 50) * 50; // 최대값을 50 단위로 반올림*
-  const stepCount = niceMax / 50; //최대값 기준 눈금 갯수
-
-  // const scaleSteps = 5; // 눈금 5개로 설정
   for (let i = 0; i <= stepCount; i++) {
     // Y축 눈금 위치 계산 (***위쪽이 0, 아래쪽이 최대값)
     //  chartHeight = y축 0점, '-10'으로 라벨이 캔버스 위로 이탈 방지
     const y = chartHeight - (i * (chartHeight - 10)) / stepCount;
-
     //  눈금 값 계산
-    const value = i * 50;
+    const value = i * tickSize;
     // const value = Math.ceil((i * maxValue) / scaleSteps); // 최대값을 눈금 수로 나눈 후 올림 처리
 
     // 눈금 선 그리기
@@ -286,7 +284,7 @@ const drawScale = (chartPadding, chartHeight, maxValue) => {
  * @param chartHeight 캔버스 높이
  * @param maxValue 차트 데이터 최대값
  */
-const chartDataWithRects = ref([]);
+const chartDataArr = ref([]);
 const drawBars = (chartPadding, chartWidth, chartHeight, maxValue) => {
   const legendKeysArr = Object.keys(props.data[0]); // return ['legend_1', 'legend_2']
   // 막대 너비 및 간격 계산
@@ -336,7 +334,7 @@ const drawBars = (chartPadding, chartWidth, chartHeight, maxValue) => {
         width: barWidth,
         height: barHeight,
       };
-      chartDataWithRects.value.push(groupObj);
+      chartDataArr.value.push(groupObj);
     });
 
     // 그룹 이름 (X축 레이블) 표시 (첫 번째 항목에서만)
@@ -403,7 +401,7 @@ onMounted(() => {
 });
 
 watch(
-  () => props.data,
+  () => [props.data, props.legends],
   () => {
     drawChart();
   },
@@ -419,6 +417,18 @@ const calculateNiceMaxValue = (maxValue) => {
 
   // 만약 반올림된 값이 maxValue보다 50 이상 크다면, maxValue에 가장 가까운 50 단위로 설정
   return roundedMax - maxValue >= 50 ? roundedMax - 50 : roundedMax;
+};
+
+// 최대값에 맞춰 눈금 개수 계산
+const calculateScaleSteps = (maxValue, scaleStep) => {
+  // 최댓값을 scaleSteps 개수로 나누고, 가장 가까운 10의 배수로 반올림
+  const rawTickSize = maxValue / scaleStep;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rawTickSize))); // 10의 승수 구하기
+
+  // 데이터의 최대값(maxValue)이 커지면 자연스럽게 간격(tickSize)도 커짐
+  let tickSize = Math.ceil(rawTickSize / magnitude) * magnitude; // 10^n 단위로 반올림 (애매한 숫자x)
+  const stepCount = Math.max(2, Math.ceil(maxValue / tickSize)); // 최소 2개 이상의 눈금 보장
+  return { tickSize, stepCount };
 };
 </script>
 
