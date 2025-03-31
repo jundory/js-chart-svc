@@ -199,24 +199,26 @@ const handleTooltipMove = (event) => {
   });
 };
 
-const drawBgLines = (chartPadding, chartWidth, chartHeight) => {
+const drawBgLines = (chartPadding, chartWidth, chartHeight, maxValue) => {
+  const { tickSize, stepCount } = calculateScaleSteps(maxValue, 5);
+  console.log(chartPadding);
+
   ctx.value.strokeStyle = "#ddd"; // 선 색상 (연한 회색)
   ctx.value.lineWidth = 1; // 선 두께
-  const scaleSteps = 5;
   // 가로선 (y축 기준)
-  for (let i = 0; i <= scaleSteps; i++) {
+  for (let i = 1; i <= stepCount; i++) {
     // const y = chartPadding + chartHeight * (1 - i / 10);
-    const y = chartHeight - (i * (chartHeight - 10)) / scaleSteps;
+    const y = chartHeight - (i * (chartHeight - 10)) / stepCount;
 
     ctx.value.beginPath();
-    ctx.value.moveTo(chartPadding, y);
-    ctx.value.lineTo(chartPadding + chartWidth, y);
+    ctx.value.moveTo(chartPadding, y); //여기부터
+    ctx.value.lineTo(chartWidth - 10, y); //여기까지
     ctx.value.stroke();
   }
 
   // 세로선 (x축 기준)
   const groupWidth = (chartWidth - chartPadding - 20) / props.data.length; // 막대 그룹 간격
-  for (let i = 0; i <= props.data.length; i++) {
+  for (let i = 1; i <= props.data.length; i++) {
     const x = chartPadding + i * groupWidth;
     ctx.value.beginPath();
     ctx.value.moveTo(x, 10);
@@ -269,11 +271,11 @@ const drawScale = (chartPadding, chartHeight, maxValue) => {
     // 눈금 선 그리기
     ctx.value.beginPath();
     ctx.value.moveTo(chartPadding, y); // (축 기준 눈금 시작점, 기울기)
-    ctx.value.lineTo(chartPadding - 5, y); //  눈금 끝점 (왼쪽으로 5px 이동 후 그림, 기울기)
+    // ctx.value.lineTo(chartPadding - 5, y); //  눈금 끝점 (왼쪽으로 5px 이동 후 그림, 기울기)
     ctx.value.stroke(); // 선 그리기
 
     // Y축 레이블 숫자 표시
-    ctx.value.fillText(value.toString(), chartPadding - 10, y + 4); //text만 출력 가능, 눈금보다 10px 왼쪽, 글자 중앙 정렬(미세 조정)
+    ctx.value.fillText(value.toString(), chartPadding - 5, y + 4); //text만 출력 가능, 눈금보다 10px 왼쪽, 글자 중앙 정렬(미세 조정)
   }
 };
 
