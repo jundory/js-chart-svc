@@ -55,7 +55,13 @@ import Bar3DChart from "./components/Bar3DChart.vue";
 import RadarChart from "./components/RadarChart.vue";
 
 import BarData from "./mockData/BarData.json";
-
+/**
+ * data set
+ * {
+ * data: [],
+ * legends: []
+ * }
+ */
 const barData = BarData.data;
 const barLegends = ref();
 const radarData = ref([

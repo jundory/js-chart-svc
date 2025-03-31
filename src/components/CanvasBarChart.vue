@@ -115,7 +115,7 @@ const handleMouseMove = (event) => {
 
   offset.x = offset.x + xGap;
   offset.y = offset.y + yGap;
-  console.log(" 드래그 적용 new 좌표", offset.x, offset.y);
+  // console.log(" 드래그 적용 new 좌표", offset.x, offset.y);
 
   lastMouse.x = event.clientX;
   lastMouse.y = event.clientY;
@@ -152,7 +152,7 @@ const handleZoom = (event) => {
   offset.y =
     mouseY - (mouseY - offset.y) * (newScale.value / scaleFactor.value);
 
-  console.log(" 줌 적용 new 좌표", offset.x, offset.y);
+  // console.log(" 줌 적용 new 좌표", offset.x, offset.y);
 
   scaleFactor.value = newScale.value;
   drawChart(); // 다시 그리기
