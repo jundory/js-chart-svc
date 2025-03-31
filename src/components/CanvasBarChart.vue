@@ -28,12 +28,18 @@
     <div
       v-if="tooltip.visible"
       class="tooltip"
-      :style="{ top: tooltip.y + 110 + 'px', left: tooltip.x + 'px' }"
+      :style="{ top: tooltip.y + 'px', left: tooltip.x + 'px' }"
     >
-      <div>{{ tooltip.label }}</div>
+      <div class="tooltip__label">{{ tooltip.label }}</div>
       <br />
-      {{ tooltip.labelInfo }} :
-      {{ tooltip.text }}
+      <div class="tooltip__detail">
+        <div
+          class="color-box"
+          :style="{ backgroundColor: props.colors[tooltip.index] }"
+        ></div>
+        {{ tooltip.labelInfo }} :
+        {{ tooltip.text }}
+      </div>
     </div>
   </div>
 </template>
@@ -160,6 +166,7 @@ const hideTooltip = () => {
 };
 const tooltip = reactive({
   visible: false,
+  index: null,
   labelInfo: "",
   label: "",
   text: "",
@@ -180,7 +187,7 @@ const handleTooltipMove = (event) => {
 
   tooltip.visible = false; // 초기화
   chartDataArr.value.forEach((group) => {
-    Object.keys(group).forEach((data) => {
+    Object.keys(group).forEach((data, index) => {
       const { labelInfo, label, value, x, y, width, height } = group[data];
       if (
         mouseX >= x &&
@@ -188,6 +195,7 @@ const handleTooltipMove = (event) => {
         mouseY >= y &&
         mouseY <= y + height
       ) {
+        tooltip.index = index; //컬러박스용
         tooltip.visible = true;
         tooltip.labelInfo = labelInfo;
         tooltip.label = label;
@@ -472,13 +480,25 @@ const calculateScaleSteps = (maxValue, scaleStep) => {
 }
 .tooltip {
   position: absolute;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
+  /* background: rgba(0, 0, 0, 0.7); */
+  /* color: white; */
+  color: rgba(0, 0, 0, 0.7);
+  background: #fff;
   padding: 5px 10px;
-  border-radius: 5px;
+  border: thick double #32a1ce;
+  border-radius: 3px;
   font-size: 14px;
   pointer-events: none; /* 마우스 이벤트 방해 안 받도록 */
   transform: translate(-50%, -100%);
   white-space: nowrap;
+}
+
+.tooltip__label {
+  font-weight: 600;
+}
+
+.tooltip__detail {
+  display: flex;
+  align-items: center;
 }
 </style>
