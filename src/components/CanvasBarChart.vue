@@ -109,7 +109,7 @@ const handleMouseClick = (event) => {
   lastMouse.y = event.clientY;
 };
 const handleMouseMove = (event) => {
-  if (!isDragging.value) return;
+  if (scaleFactor.value <= 1 || !isDragging.value) return;
   const xGap = event.clientX - lastMouse.x;
   const yGap = event.clientY - lastMouse.y;
 
@@ -131,13 +131,14 @@ const newScale = ref(null); // 새롭게 적용될 줌 크기
 const handleZoom = (event) => {
   event.preventDefault();
 
-  const minScale = 0.8;
+  const minScale = 1;
   const maxScale = 2;
   const zoomIntensity = 0.2; // 줌 강도 조절
   const rect = chartCanvas.value.getBoundingClientRect(); //캔버스의 위치와 크기 정보를 화면 좌표 기준으로 저장
   const mouseX = event.clientX - rect.left; // 마우스 절대 위치에서 rect를 빼서 캔버스 내부 좌표로 변환
   const mouseY = event.clientY - rect.top;
 
+  const prevScale = scaleFactor.value;
   newScale.value =
     scaleFactor.value - (event.deltaY > 0 ? zoomIntensity : -zoomIntensity); // 휠 방향 확대 & 축소
 
@@ -145,13 +146,26 @@ const handleZoom = (event) => {
   if (newScale.value < minScale) newScale.value = minScale;
   if (newScale.value > maxScale) newScale.value = maxScale;
 
-  // 줌 기준점 보정 (인앤아웃 시 중심을 마우스 위치로 설정 ***기본값은 (0,0))
-  offset.x =
-    mouseX - (mouseX - offset.x) * (newScale.value / scaleFactor.value);
-  // (현재 마우스 위치와 현재 기준점 사이 거리) * (줌 후 새로운 비율 / 줌 이전 기존 배율)
-  offset.y =
-    mouseY - (mouseY - offset.y) * (newScale.value / scaleFactor.value);
+  if (event.deltaY < 0) {
+    // 줌인 시 중심을 마우스 위치로 설정 ***기본값은 (0,0))
+    offset.x =
+      mouseX - (mouseX - offset.x) * (newScale.value / scaleFactor.value);
+    // (현재 마우스 위치와 현재 기준점 사이 거리) * (줌 후 새로운 비율 / 줌 이전 기존 배율)
+    offset.y =
+      mouseY - (mouseY - offset.y) * (newScale.value / scaleFactor.value);
+  } else {
+    // 줌 아웃 시 차트 절대 중심 기준
+    const defaultOffset = { x: 0, y: 0 };
+    const chartCenterX = defaultOffset.x + rect.width / 2; // 최초 차트 중심 X
+    const chartCenterY = defaultOffset.y + rect.height / 2; // 최초 차트 중심 Y
 
+    offset.x =
+      chartCenterX -
+      (chartCenterX - defaultOffset.x) * (newScale.value / prevScale);
+    offset.y =
+      chartCenterY -
+      (chartCenterY - defaultOffset.y) * (newScale.value / prevScale);
+  }
   // console.log(" 줌 적용 new 좌표", offset.x, offset.y);
 
   scaleFactor.value = newScale.value;
