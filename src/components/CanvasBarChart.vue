@@ -208,8 +208,7 @@ const handleTooltipMove = (event) => {
 };
 
 const drawBgLines = (chartPadding, chartWidth, chartHeight, maxValue) => {
-  const { tickSize, stepCount } = calculateScaleSteps(maxValue, 5);
-  console.log(chartPadding);
+  const { tickSize, stepCount } = calculateScale(maxValue, 5);
 
   ctx.value.strokeStyle = "#ddd"; // 선 색상 (연한 회색)
   ctx.value.lineWidth = 1; // 선 두께
@@ -260,7 +259,7 @@ const drawAxis = (chartPadding, chartWidth, chartHeight) => {
  * @param maxValue 차트 데이터 최대값
  */
 const drawScale = (chartPadding, chartHeight, maxValue) => {
-  const { tickSize, stepCount } = calculateScaleSteps(maxValue, 5);
+  const { tickSize, stepCount } = calculateScale(maxValue, 5);
 
   ctx.value.lineWidth = 0.5; // 눈금선 두께
   ctx.value.strokeStyle = "#999"; // 눈금선 색상
@@ -274,7 +273,6 @@ const drawScale = (chartPadding, chartHeight, maxValue) => {
     const y = chartHeight - (i * (chartHeight - 10)) / stepCount;
     //  눈금 값 계산
     const value = i * tickSize;
-    // const value = Math.ceil((i * maxValue) / scaleSteps); // 최대값을 눈금 수로 나눈 후 올림 처리
 
     // 눈금 선 그리기
     ctx.value.beginPath();
@@ -330,10 +328,6 @@ const drawBars = (chartPadding, chartWidth, chartHeight, maxValue) => {
       ctx.value.textAlign = "center";
       ctx.value.fillText(value.toString(), x + barWidth / 2, labelY);
 
-      // 직접 추가해본 테두리
-      // ctx.value.fillStyle = "#000";
-      // ctx.value.lineWidth = 2;
-      // ctx.value.strokeRect(x, y, barWidth, barHeight);
       //막대 별 rect 추가
       groupObj[bar] = {
         value,
@@ -384,7 +378,7 @@ const drawChart = () => {
   const chartPadding = 40;
 
   // 데이터 중 최댓값 찾기
-  const maxValue = calculateNiceMaxValue(
+  const maxValue = calculateMaxValue(
     Math.max(...props.data.map((group) => Math.max(...Object.values(group))))
   ); //막대가 차트 높이를 벗어나지 않게 (barHeight 비율은 maxValue와 반비례)
 
@@ -418,8 +412,8 @@ watch(
   { deep: true }
 );
 
-// 최대값 눈금 계산기
-const calculateNiceMaxValue = (maxValue) => {
+// 눈금 최대값 계산
+const calculateMaxValue = (maxValue) => {
   if (maxValue < 50) return 50; // 최소값 50 보장
 
   // 50 단위로 반올림하되, maxValue를 초과하지 않도록 조정
@@ -429,17 +423,33 @@ const calculateNiceMaxValue = (maxValue) => {
   return roundedMax - maxValue >= 50 ? roundedMax - 50 : roundedMax;
 };
 
-// 최대값에 맞춰 눈금 개수 계산
-const calculateScaleSteps = (maxValue, scaleStep) => {
+// 눈금 개수&간격 계산
+const calculateScale = (maxValue, scaleStep) => {
   // 최댓값을 scaleSteps 개수로 나누고, 가장 가까운 10의 배수로 반올림
   const rawTickSize = maxValue / scaleStep;
-  const magnitude = Math.pow(10, Math.floor(Math.log10(rawTickSize))); // 10의 승수 구하기
-
+  const magnitude = 10 ** Math.floor(Math.log10(rawTickSize)); // 10의 승수 구하기
   // 데이터의 최대값(maxValue)이 커지면 자연스럽게 간격(tickSize)도 커짐
   let tickSize = Math.ceil(rawTickSize / magnitude) * magnitude; // 10^n 단위로 반올림 (애매한 숫자x)
   const stepCount = Math.max(2, Math.ceil(maxValue / tickSize)); // 최소 2개 이상의 눈금 보장
   return { tickSize, stepCount };
 };
+// 최대값에 맞춰 눈금 개수 계산
+// const calculateScale = (maxValue) => {
+//   const tickSize = calculateTickSize(maxValue);
+//   const stepCount = Math.ceil(maxValue / tickSize); // 총 눈금 개수 계산
+//   return {
+//     tickSize,
+//     stepCount,
+//   };
+// };
+// const calculateTickSize = (maxValue) => {
+//   const numDigits = Math.floor(Math.log10(maxValue)); // 자릿수 계산
+//   let tickSize = numDigits === 1 ? 20 : numDigits === 2 ? 200 : 2000; // 간격 계산
+//   if (maxValue < tickSize) {
+//     tickSize /= 2; // 최대값 < 간격 일 시, 절반으로 간격 조정
+//   }
+//   return tickSize;
+// };
 </script>
 
 <style scoped>
