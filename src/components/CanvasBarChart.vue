@@ -45,7 +45,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch, defineProps } from "vue";
+import { ref, reactive, onMounted, watch, computed, defineProps } from "vue";
 
 // props object로 타입 지정 및 기본값 설정
 const props = defineProps({
@@ -90,6 +90,10 @@ const offset = reactive({
   x: 0,
   y: 0,
 });
+// 차트의 크기와 위치 정보 화면 좌표 기준으로 계산
+const chartRect = computed(() => {
+  return chartCanvas.value.getBoundingClientRect();
+});
 
 /**
  * @description 드래그
@@ -113,8 +117,22 @@ const handleMouseMove = (event) => {
   const xGap = event.clientX - lastMouse.x;
   const yGap = event.clientY - lastMouse.y;
 
-  offset.x = offset.x + xGap;
-  offset.y = offset.y + yGap;
+  const chartWidth = chartRect.value.width; // 차트의 실제 너비
+  const chartHeight = chartRect.value.height; // 차트의 실제 높이
+
+  // 🔥 중심 보정을 위해 이동 가능한 범위 계산
+  const scaledWidth = chartWidth * scaleFactor.value;
+  const scaledHeight = chartHeight * scaleFactor.value;
+
+  // 이동 가능한 최소 & 최대 값 계산
+  const minOffsetX = Math.min(0, chartWidth - scaledWidth); // 왼쪽 경계
+  const maxOffsetX = Math.max(0, scaledWidth - chartWidth); // 오른쪽 경계
+  const minOffsetY = Math.min(0, chartHeight - scaledHeight); // 상단 경계
+  const maxOffsetY = Math.max(0, scaledHeight - chartHeight); // 하단 경계
+
+  // 드래그 후 새로운 offset을 계산하면서 이동 범위 제한
+  offset.x = Math.max(minOffsetX, Math.min(maxOffsetX, offset.x + xGap));
+  offset.y = Math.max(minOffsetY, Math.min(maxOffsetY, offset.y + yGap));
   // console.log(" 드래그 적용 new 좌표", offset.x, offset.y);
 
   lastMouse.x = event.clientX;
@@ -134,9 +152,8 @@ const handleZoom = (event) => {
   const minScale = 1;
   const maxScale = 2;
   const zoomIntensity = 0.2; // 줌 강도 조절
-  const rect = chartCanvas.value.getBoundingClientRect(); //캔버스의 위치와 크기 정보를 화면 좌표 기준으로 저장
-  const mouseX = event.clientX - rect.left; // 마우스 절대 위치에서 rect를 빼서 캔버스 내부 좌표로 변환
-  const mouseY = event.clientY - rect.top;
+  const mouseX = event.clientX - chartRect.value.left; // 마우스 절대 위치에서 rect를 빼서 캔버스 내부 좌표로 변환
+  const mouseY = event.clientY - chartRect.value.top;
 
   const prevScale = scaleFactor.value;
   newScale.value =
@@ -156,8 +173,8 @@ const handleZoom = (event) => {
   } else {
     // 줌 아웃 시 차트 절대 중심 기준
     const defaultOffset = { x: 0, y: 0 };
-    const chartCenterX = defaultOffset.x + rect.width / 2; // 최초 차트 중심 X
-    const chartCenterY = defaultOffset.y + rect.height / 2; // 최초 차트 중심 Y
+    const chartCenterX = defaultOffset.x + chartRect.value.width / 2; // 최초 차트 중심 X
+    const chartCenterY = defaultOffset.y + chartRect.value.height / 2; // 최초 차트 중심 Y
 
     offset.x =
       chartCenterX -
@@ -189,15 +206,16 @@ const tooltip = reactive({
 });
 const handleTooltipMove = (event) => {
   if (!ctx.value) return;
-  const rect = chartCanvas.value.getBoundingClientRect(); //캔버스의 위치와 크기 정보를 화면 좌표 기준으로 저장
   /**
    * 현재 마우스 커서 좌표값 구하는 공식
    * 1. 현 커서 위치에서 rect를 빼서, 캔버스 내부 좌표로 변환
    * 2. 드래그로 이동되어 바뀐(xGap, yGap이 더해진) offset값을 빼서, 차트의 새로운 위치 재계산
    * 3. scaleFactor(확대 비율)로 나눠서, 줌인&아웃으로 바뀐 차트의 비율에 맞게 마우스 위치도 변환
    */
-  const mouseX = (event.clientX - rect.left - offset.x) / scaleFactor.value;
-  const mouseY = (event.clientY - rect.top - offset.y) / scaleFactor.value;
+  const mouseX =
+    (event.clientX - chartRect.value.left - offset.x) / scaleFactor.value;
+  const mouseY =
+    (event.clientY - chartRect.value.top - offset.y) / scaleFactor.value;
 
   tooltip.visible = false; // 초기화
   chartDataArr.value.forEach((group) => {
