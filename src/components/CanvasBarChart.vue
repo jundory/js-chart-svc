@@ -326,7 +326,7 @@ const drawScale = (chartPadding, chartHeight, maxValue) => {
  */
 const chartDataArr = ref([]);
 const drawBars = (chartPadding, chartWidth, chartHeight, maxValue) => {
-  const legendKeysArr = Object.keys(props.data[0]); // return ['legend_1', 'legend_2']
+  const legendKeysArr = Object.keys(props.data[0].values); // return ['sales', 'profit', 'expenses', 'growth_rate']
   // 막대 너비 및 간격 계산
   const groupWidth = (chartWidth - chartPadding - 20) / props.data.length;
   const barWidth = (groupWidth * 0.8) / legendKeysArr.length;
@@ -335,8 +335,8 @@ const drawBars = (chartPadding, chartWidth, chartHeight, maxValue) => {
   props.data.forEach((group, groupIdx) => {
     const groupObj = {};
     // 막대 별
-    Object.keys(group).forEach((bar, barIdx) => {
-      const value = group[bar] || 0; // 값이 없을 경우 0 처리
+    Object.keys(group.values).forEach((bar, barIdx) => {
+      const value = group.values[bar] || 0; // 값이 없을 경우 0 처리
       const barHeight = (value / maxValue) * (chartHeight - 10);
 
       // 막대 그리기 시작할 x, y 좌표 계산
@@ -411,7 +411,9 @@ const drawChart = () => {
 
   // 데이터 중 최댓값 찾기
   const maxValue = calculateMaxValue(
-    Math.max(...props.data.map((group) => Math.max(...Object.values(group))))
+    Math.max(
+      ...props.data.map((group) => Math.max(...Object.values(group.values)))
+    )
   ); //막대가 차트 높이를 벗어나지 않게 (barHeight 비율은 maxValue와 반비례)
 
   // Draw the axis : x,y 축 그리기

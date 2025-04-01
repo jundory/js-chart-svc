@@ -75,7 +75,6 @@ const categories = ref(["속도", "안정성", "사용성", "디자인", "기능
 
 onMounted(() => {
   barLegends.value = BarData.legends.map((legend) => legend.label);
-  console.log("barLegends", barLegends.value);
 });
 </script>
 

@@ -1,46 +1,76 @@
 {
+  "categories": [
+    "기업 A",
+    "기업 B",
+    "기업 C",
+    "기업 D",
+    "기업 E",
+    "기업 F",
+    "기업 G"
+  ],
   "data": [
     {
-      "sales": 45,
-      "profit": 80,
-      "expenses": 60,
-      "growth_rate": 90
+      "category": "기업 A",
+      "values": {
+        "sales": 45,
+        "profit": 80,
+        "expenses": 60,
+        "growth_rate": 90
+      }
     },
     {
-      "sales": 35,
-      "profit": 70,
-      "expenses": 50,
-      "growth_rate": 85
+      "category": "기업 B",
+      "values": {
+        "sales": 35,
+        "profit": 70,
+        "expenses": 50,
+        "growth_rate": 85
+      }
     },
     {
-      "sales": 55,
-      "profit": 75,
-      "expenses": 65,
-      "growth_rate": 95
+      "category": "기업 C",
+      "values": {
+        "sales": 55,
+        "profit": 75,
+        "expenses": 65,
+        "growth_rate": 95
+      }
     },
     {
-      "sales": 40,
-      "profit": 60,
-      "expenses": 55,
-      "growth_rate": 70
+      "category": "기업 D",
+      "values": {
+        "sales": 40,
+        "profit": 60,
+        "expenses": 55,
+        "growth_rate": 70
+      }
     },
     {
-      "sales": 50,
-      "profit": 85,
-      "expenses": 75,
-      "growth_rate": 100
+      "category": "기업 E",
+      "values": {
+        "sales": 50,
+        "profit": 85,
+        "expenses": 75,
+        "growth_rate": 184
+      }
     },
     {
-      "sales": 60,
-      "profit": 90,
-      "expenses": 80,
-      "growth_rate": 30
+      "category": "기업 F",
+      "values": {
+        "sales": 60,
+        "profit": 90,
+        "expenses": 80,
+        "growth_rate": 30
+      }
     },
     {
-      "sales": 60,
-      "profit": 90,
-      "expenses": 80,
-      "growth_rate": 70
+      "category": "기업 G",
+      "values": {
+        "sales": 60,
+        "profit": 90,
+        "expenses": 80,
+        "growth_rate": 70
+      }
     }
   ],
   "legends": [
