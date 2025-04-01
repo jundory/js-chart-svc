@@ -366,7 +366,7 @@ const drawBars = (chartPadding, chartWidth, chartHeight, maxValue) => {
         x,
         y,
         labelInfo: props.legends ? props.legends[barIdx] : null,
-        label: `항목 ${groupIdx + 1}`,
+        label: props.data[groupIdx].category,
         width: barWidth,
         height: barHeight,
       };
@@ -378,7 +378,7 @@ const drawBars = (chartPadding, chartWidth, chartHeight, maxValue) => {
     ctx.value.font = "12px Arial";
     ctx.value.textAlign = "center";
     ctx.value.fillText(
-      `항목 ${groupIdx + 1}`,
+      props.data[groupIdx].category,
       chartPadding + groupIdx * groupWidth + groupWidth / 2,
       chartHeight + 20
     );
