@@ -83,6 +83,16 @@ const props = defineProps({
       "#B07AA1", // 보라색
     ],
   },
+  fontOptions: {
+    type: Object,
+    default: () => ({
+      fontFamily: "Arial",
+      fontSize: 12,
+      fontColor: "#000",
+      fontContrastColor: "#fff",
+      fontWeight: "normal",
+    }),
+  },
 });
 
 // 차트 기본 좌표
@@ -292,11 +302,12 @@ const drawAxis = (chartPadding, chartWidth, chartHeight) => {
  */
 const drawScale = (chartPadding, chartHeight, maxValue) => {
   const { tickSize, stepCount } = calculateScale(maxValue, 5);
+  const { fontFamily, fontSize, fontColor, fontWeight } = props.fontOptions;
 
   ctx.value.lineWidth = 0.5; // 눈금선 두께
   ctx.value.strokeStyle = "#999"; // 눈금선 색상
-  ctx.value.fillStyle = "#333"; // 텍스트 색상
-  ctx.value.font = "12px Arial"; // 글꼴
+  ctx.value.fillStyle = fontColor; // 텍스트 색상
+  ctx.value.font = `${fontWeight} ${fontSize}px ${fontFamily}`; // 글꼴
   ctx.value.textAlign = "right"; // 정렬
 
   for (let i = 0; i <= stepCount; i++) {
@@ -326,6 +337,8 @@ const drawScale = (chartPadding, chartHeight, maxValue) => {
  */
 const chartDataArr = ref([]);
 const drawBars = (chartPadding, chartWidth, chartHeight, maxValue) => {
+  const { fontFamily, fontSize, fontColor, fontContrastColor, fontWeight } =
+    props.fontOptions;
   const legendKeysArr = Object.keys(props.data[0].values); // return ['sales', 'profit', 'expenses', 'growth_rate']
   // 막대 너비 및 간격 계산
   const groupWidth = (chartWidth - chartPadding - 20) / props.data.length;
@@ -354,9 +367,9 @@ const drawBars = (chartPadding, chartWidth, chartHeight, maxValue) => {
       const isTopBar = barHeight > chartHeight - 20;
       const labelY = isTopBar ? y + 15 : Math.max(y - 5, 15); // 최소 y 좌표를 15로 설정
       isTopBar
-        ? (ctx.value.fillStyle = "#fff")
-        : (ctx.value.fillStyle = "#333"); // 글씨 색상
-      ctx.value.font = "12px Arial";
+        ? (ctx.value.fillStyle = fontContrastColor)
+        : (ctx.value.fillStyle = fontColor); // 글씨 색상
+      ctx.value.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
       ctx.value.textAlign = "center";
       ctx.value.fillText(value.toString(), x + barWidth / 2, labelY);
 

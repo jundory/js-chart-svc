@@ -7,6 +7,8 @@
       chartTitle="Canvas 막대 차트"
       :legends="barLegends"
       :maxBarsLength="3"
+      :colors="colors"
+      :fontOptions="fontOptions"
     />
     <!-- :colors="['#FF6384', '#36A2EB']" -->
     <!-- <WebGLBarChart
