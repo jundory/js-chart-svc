@@ -1,6 +1,14 @@
 <template>
   <div class="chart-container">
     <h3 v-if="chartTitle" class="chart-title">{{ chartTitle }}</h3>
+    <!-- 왼쪽 버튼 -->
+    <button @click="slideLeft" class="chart-slide-btn left">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path
+          d="M15.53 19.47a.75.75 0 0 1-1.06 0l-6-6a.75.75 0 0 1 0-1.06l6-6a.75.75 0 0 1 1.06 1.06L10.06 12l5.47 5.47a.75.75 0 0 1 0 1.06z"
+        />
+      </svg>
+    </button>
     <div class="chart">
       <canvas
         ref="chartCanvas"
@@ -10,6 +18,14 @@
         :height="height"
       ></canvas>
     </div>
+    <!-- 오른쪽 버튼 -->
+    <button @click="slideRight" class="chart-slide-btn right">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path
+          d="M8.47 19.47a.75.75 0 0 0 1.06 0l6-6a.75.75 0 0 0 0-1.06l-6-6a.75.75 0 0 0-1.06 1.06L13.94 12l-5.47 5.47a.75.75 0 0 0 0 1.06z"
+        />
+      </svg>
+    </button>
     <div class="legend" v-if="props.legends">
       <div
         v-for="(label, index) in props.legends"
@@ -104,6 +120,11 @@ const offset = reactive({
 const chartRect = computed(() => {
   return chartCanvas.value.getBoundingClientRect();
 });
+
+/**
+ * @description 버튼
+ */
+const slideLeft = () => {};
 
 /**
  * @description 드래그
@@ -503,6 +524,9 @@ const calculateScale = (maxValue, scaleStep) => {
 .chart-container {
   font-family: Arial, sans-serif;
   display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
   flex-direction: column;
   align-items: center;
   margin: 20px 0;
@@ -542,8 +566,8 @@ const calculateScale = (maxValue, scaleStep) => {
   color: rgba(0, 0, 0, 0.7);
   background: #fff;
   padding: 5px 10px;
-  border: thick double #32a1ce;
-  border-radius: 3px;
+  border: thick double #23bff3;
+  border-radius: 10px;
   font-size: 14px;
   pointer-events: none; /* 마우스 이벤트 방해 안 받도록 */
   transform: translate(-50%, -100%);
@@ -557,5 +581,39 @@ const calculateScale = (maxValue, scaleStep) => {
 .tooltip__detail {
   display: flex;
   align-items: center;
+}
+
+.chart-slide-btn {
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease-in-out;
+  border: none;
+  cursor: pointer;
+}
+
+.chart-slide-btn:hover {
+  background: #23bff3;
+}
+
+.chart-slide-btn:active {
+  transform: scale(0.9);
+}
+
+.chart-slide-btn.left {
+  position: absolute;
+  left: -50px;
+  transform: translateY(-50%);
+}
+
+.chart-slide-btn.right {
+  position: absolute;
+  right: -50px;
+  transform: translateY(-50%);
 }
 </style>
